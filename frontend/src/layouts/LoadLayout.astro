@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirigiendo...</title>
+    
+    <script is:inline>
+        const getLang = () => {
+            if (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) {
+                return localStorage.getItem('lang');
+            }
+            const browserLang = navigator.language.startsWith('en') ? 'en' : 'es';
+            return browserLang;
+        };
+
+        const lang = getLang();
+        
+        window.location.href = `/${lang}/`;
+    </script>
+</head>
+<body>
+</body>
+</html>
