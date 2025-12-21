@@ -1,0 +1,14 @@
+{
+  "name": "@portafolio/shared-types",
+  "version": "1.0.0",
+  "description": "Tipos compartidos para el frontend y backend",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.25.0"
+}
