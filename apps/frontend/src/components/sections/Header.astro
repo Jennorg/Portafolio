@@ -4,7 +4,9 @@ import LanguageToggleButton from '../common/LanguageToggleButton';
 import { useTranslations, Languages } from '../../../i18n/ui';
 
 const urlLang = Astro.url.pathname.split('/')[1];
-const lang = urlLang as keyof typeof Languages;
+const lang = (
+  urlLang in Languages ? urlLang : 'es'
+) as keyof typeof Languages;
 const translations = useTranslations(lang);
 ---
 

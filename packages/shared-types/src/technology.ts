@@ -10,6 +10,6 @@ export interface Technology {
   id: string;
   name: string;
   category: TechnologyCategory;
-  logo_url: string;
+  icon: string;
   created_at: string;
 }

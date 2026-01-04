@@ -1,0 +1,51 @@
+---
+import type { ProjectWithTechnologies } from "@portafolio/shared-types";
+import Card from "../ui/card.astro";
+
+const backendUrl = import.meta.env.BACKEND_URL;
+
+let projects: ProjectWithTechnologies[] = [];
+let error: string | null = null;
+
+try {
+  console.log("Fetching projects from:", backendUrl); // Debug log
+
+  if (!backendUrl) {
+    throw new Error("BACKEND_URL no está definida en las variables de entorno");
+  }
+
+  const response = await fetch(`${backendUrl}/api/projects`);
+  
+  if (!response.ok) {
+    throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+  }
+  
+  projects = (await response.json()) as ProjectWithTechnologies[];
+
+} catch (e) {
+  error = e instanceof Error ? e.message : "Error desconocido";
+  console.error("Error fetching projects from", backendUrl, ":", e);
+}
+---
+
+<section class="grid grid-cols-3 gap-3">
+  {error && (
+    <div class="test-error text-red-500 p-4 border border-red-500 rounded my-4">
+      <p>Lo sentimos, no pudimos cargar los proyectos.</p>
+      <span>{error}</span>
+    </div>
+  )}
+
+  {projects.length === 0 && !error && <p>No hay proyectos para mostrar.</p>}
+
+  {projects.map((project) => (
+    <Card 
+      title={project.title}
+      description={project.summary || project.description || ""}
+      image={project.main_image_url || undefined}
+      url={project.live_demo_url || undefined}
+      repo={project.repository_url || undefined}
+      technologies={project.technologies.map(t => ({ name: t.name, icon: t.icon || '' }))}
+    />
+  ))}
+</section>
