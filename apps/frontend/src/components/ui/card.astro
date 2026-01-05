@@ -11,10 +11,10 @@ interface Props {
 const { title, description, image, url, repo, technologies } = Astro.props;
 ---
 
-<div class="card p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white dark:bg-gray-800">
+<div class="card p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 h-full flex flex-col">
   {image && <img src={image} alt={title} class="w-full h-48 object-cover rounded-md mb-4" />}
   <h3 class="text-xl font-bold mb-2">{title}</h3>
-  <p class="text-gray-600 dark:text-gray-300 mb-4">{description}</p>
+  <p class="text-gray-600 dark:text-gray-300 mb-4 flex-grow">{description}</p>
   
   <div class="flex gap-2 mb-4">
     {technologies?.map((tech) => (
