@@ -6,6 +6,7 @@
   "packageManager": "pnpm@10.25.0",
   "scripts": {
     "dev": "ts-node-dev --respawn src/index.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,7 +14,6 @@
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/uuid": "^11.0.0",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0"
   },
@@ -21,7 +21,6 @@
     "@libsql/client": "^0.15.15",
     "@portafolio/shared-types": "workspace:*",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1",
-    "uuid": "^13.0.0"
+    "express": "^5.2.1"
   }
 }

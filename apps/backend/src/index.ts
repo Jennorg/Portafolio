@@ -12,11 +12,15 @@ app.use(express.json());
 app.use("/api/projects", projectRoutes);
 app.use("/api/technologies", technologyRoutes);
 
-schema().then(() => {
+schema().catch(console.error);
+
+if (process.env.NODE_ENV !== "production") {
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
   });
-});
+}
+
+export default app;
 
 const shutdown = async () => {
   console.log("\nCerrando conexiones...");
@@ -24,5 +28,5 @@ const shutdown = async () => {
   process.exit(0);
 };
 
-process.on("SIGINT", shutdown); // Al presionar Ctrl+C
-process.on("SIGTERM", shutdown); // Al ser terminado por el sistema
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);

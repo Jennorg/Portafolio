@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { turso } from "../db/client";
-import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
 
 export const getProjects = async (req: Request, res: Response) => {
   const lang = (req.query.lang as string) || "es";
@@ -74,7 +74,7 @@ export const createProject = async (req: Request, res: Response) => {
     technology_ids: string[];
   };
 
-  const projectId = uuidv4();
+  const projectId = crypto.randomUUID();
 
   try {
     await turso.batch(
