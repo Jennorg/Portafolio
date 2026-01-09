@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+
 interface Props {
   title: string;
   description: string;
@@ -6,34 +8,106 @@ interface Props {
   url?: string;
   repo?: string;
   technologies?: { name: string; icon: string }[];
+  liveText?: string;
+  repoText?: string;
+  readMoreText?: string;
+  showLessText?: string;
 }
 
-const { title, description, image, url, repo, technologies } = Astro.props;
+const { 
+  title, 
+  description, 
+  image, 
+  url, 
+  repo, 
+  technologies, 
+  liveText = "Live Demo", 
+  repoText = "GitHub",
+  readMoreText = "Read more",
+  showLessText = "Show less"
+} = Astro.props;
+
+const MAX_LENGTH = 100;
+const isLongDescription = description.length > MAX_LENGTH;
+const truncatedDescription = isLongDescription ? `${description.slice(0, MAX_LENGTH)}...` : description;
+const uniqueId = `desc-${Math.random().toString(36).substr(2, 9)}`;
 ---
 
-<div class="card p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow bg-white dark:bg-gray-800 h-full flex flex-col">
-  {image && <img src={image} alt={title} class="w-full h-48 object-cover rounded-md mb-4" />}
-  <h3 class="text-xl font-bold mb-2">{title}</h3>
-  <p class="text-gray-600 dark:text-gray-300 mb-4 flex-grow">{description}</p>
+<div class="glass-panel p-6 rounded-2xl h-full flex flex-col transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 group">
+  {image && <Image src={image} alt={title} inferSize={true} class="w-full h-48 object-cover rounded-xl mb-6 shadow-md transition-transform group-hover:scale-105" />}
+  <h3 class="text-2xl font-bold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-text-body)] to-[var(--color-text-muted)]">{title}</h3>
   
-  <div class="flex gap-2 mb-4">
+  <div class="mb-6 flex-grow">
+    <p class="text-[var(--color-text-muted)] leading-relaxed" id={`${uniqueId}-short`}>
+      {truncatedDescription}
+    </p>
+    {isLongDescription && (
+      <>
+        <p class="text-[var(--color-text-muted)] leading-relaxed hidden" id={`${uniqueId}-full`}>
+          {description}
+        </p>
+        <button 
+          class="text-primary text-sm font-medium hover:underline mt-2 focus:outline-none"
+          data-toggle-id={uniqueId}
+          data-read-more={readMoreText}
+          data-show-less={showLessText}
+        >
+          {readMoreText}
+        </button>
+      </>
+    )}
+  </div>
+  
+  <div class="flex flex-wrap gap-2 mb-6">
     {technologies?.map((tech) => (
-      <span class="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded" title={tech.name}>
+      <span class="text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 backdrop-blur-sm">
         {tech.name}
       </span>
     ))}
   </div>
 
-  <div class="flex gap-2">
+  <div class="flex gap-4 pt-4 border-t border-[var(--color-border)]">
     {url && (
-      <a href={url} target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">
-        Live Demo
+      <a href={url} target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-primary hover:text-accent transition-colors flex items-center gap-1">
+        {liveText} ↗
       </a>
     )}
     {repo && (
-      <a href={repo} target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:underline">
-        Repo
+      <a href={repo} target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-body)] transition-colors flex items-center gap-1">
+        {repoText}
       </a>
     )}
   </div>
 </div>
+
+<script>
+  function setupReadMore() {
+    const buttons = document.querySelectorAll('button[data-toggle-id]');
+    
+    buttons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const btn = e.currentTarget as HTMLButtonElement;
+        const targetId = btn.dataset.toggleId;
+        const shortText = document.getElementById(`${targetId}-short`);
+        const fullText = document.getElementById(`${targetId}-full`);
+        
+        if (shortText && fullText) {
+          const isExpanded = shortText.classList.contains('hidden');
+          
+          if (isExpanded) {
+            shortText.classList.remove('hidden');
+            fullText.classList.add('hidden');
+            btn.textContent = btn.dataset.readMore || 'Read more';
+          } else {
+            shortText.classList.add('hidden');
+            fullText.classList.remove('hidden');
+            btn.textContent = btn.dataset.showLess || 'Show less';
+          }
+        }
+      });
+    });
+  }
+
+  // Run ONLY on astro:page-load to avoid duplicate listeners on initial load
+  document.addEventListener('astro:page-load', setupReadMore);
+</script>

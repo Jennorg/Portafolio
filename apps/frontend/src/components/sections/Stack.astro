@@ -1,53 +1,107 @@
 ---
+import { useTranslations, Languages } from '../../../i18n/ui';
+
 import type { Technology } from '@portafolio/shared-types';
 import Container from '../ui/container.astro';
+
+const urlLang = Astro.url.pathname.split('/')[1];
+const lang = (urlLang in Languages ? urlLang : 'es') as keyof typeof Languages;
+const translations = useTranslations(lang);
 
 const backendUrl = import.meta.env.BACKEND_URL;
 
 let technologies: Technology[] = [];
+let groupedTechnologies: Record<string, Technology[]> = {};
 let error: string | null = null;
 
 try {
-  console.log("Fetching technologies from:", backendUrl); // Debug log
-
   if (!backendUrl) {
-    throw new Error("BACKEND_URL no está definida en las variables de entorno");
+    throw new Error("BACKEND_URL no está definida");
   }
 
   const response = await fetch(`${backendUrl}/api/technologies`);
   
   if (!response.ok) {
-    throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+    throw new Error(`Error: ${response.status} ${response.statusText}`);
   }
   
   technologies = (await response.json()) as Technology[];
 
+  groupedTechnologies = technologies.reduce((acc, tech) => {
+    const categoryName = tech.category || 'Otras'; 
+    
+    if (!acc[categoryName]) {
+      acc[categoryName] = [];
+    }
+    acc[categoryName].push(tech);
+    return acc;
+  }, {} as Record<string, Technology[]>);
+
 } catch (e) {
   error = e instanceof Error ? e.message : "Error desconocido";
-  console.error("Error fetching technologies from", backendUrl, ":", e);
+  console.error("Error fetching technologies:", e);
 }
+
+const priorityOrder = ['language', 'frontend', 'backend', 'mobile', 'database', 'devops', 'testing', 'tools'];
+
+const sortedCategories = Object.keys(groupedTechnologies).sort((a, b) => {
+  const indexA = priorityOrder.indexOf(a.toLowerCase());
+  const indexB = priorityOrder.indexOf(b.toLowerCase());
+  
+  if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+  if (indexA !== -1) return -1;
+  if (indexB !== -1) return 1;
+  
+  return a.localeCompare(b);
+});
 ---
 
-<section class="max-w-4xl mx-auto h-screen flex flex-col justify-center">
-  <h2 class="text-3xl font-bold text-center mb-8">Tecnologías</h2>
+<section id="stack" class="max-w-6xl mx-auto min-h-screen flex flex-col justify-center py-20 px-6">
+  <h2 class="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+    {translations('stack_title')}
+  </h2>
   
   {error && (
-    <div class="test-error text-red-500 p-4 border border-red-500 rounded my-4">
-      <p>Lo sentimos, no pudimos cargar las tecnologías.</p>
-      <span>{error}</span>
+    <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl my-4 text-center">
+      <p>{translations('stack_error')}</p>
+      <span class="text-xs opacity-75">{error}</span>
     </div>
   )}
 
-  {technologies.length === 0 && !error && <p class="text-center">No hay tecnologías para mostrar.</p>}
+  {technologies.length === 0 && !error && (
+    <p class="text-center text-[var(--color-text-muted)]">{translations('stack_empty')}</p>
+  )}
 
-  <div class="flex flex-wrap justify-center gap-6">
-    {technologies.map((technology) => (
-      <Container>
-        <div class="w-12 h-12 flex items-center justify-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm hover:scale-110 transition-transform text-gray-600 dark:text-gray-200" title={technology.name}>
-             <div class="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current" set:html={technology.icon} />
+  <div class="space-y-12">
+    {sortedCategories.map((category) => (
+      <div class="animate-fade-in-up">
+        {/* Título de la Categoría */}
+        <h3 class="text-xl font-semibold mb-6 px-4 border-l-4 border-primary/50 text-[var(--color-text-body)] capitalize">
+          {category}
+        </h3>
+
+        {/* Grid de tecnologías para esta categoría */}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {groupedTechnologies[category].map((technology) => (
+              <div class="group relative flex flex-col items-center p-4 glass-panel rounded-2xl hover:bg-white/5 transition-all duration-300 border border-transparent hover:border-primary/20">
+                
+                {/* Icono */}
+                <div 
+                  class="w-12 h-12 flex items-center justify-center text-[var(--color-text-muted)] group-hover:text-primary group-hover:scale-110 transition-all duration-300" 
+                  title={technology.name}
+                >
+                   <div class="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current" set:html={technology.icon} />
+                </div>
+                
+                {/* Nombre */}
+                <span class="text-xs font-medium mt-3 text-[var(--color-text-muted)] group-hover:text-[var(--color-text-body)] transition-colors">
+                  {technology.name}
+                </span>
+                
+              </div>
+          ))}
         </div>
-        <p class="text-xs text-center mt-2 font-medium">{technology.name}</p>
-      </Container>
+      </div>
     ))}
   </div>
 </section>

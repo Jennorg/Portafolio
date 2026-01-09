@@ -1,43 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 
-const LanguageToggleButton = () => {
-  const [language, setLanguage] = useState<'en' | 'es'>('es');
+interface Props {
+  initialPath?: string;
+}
+
+const LanguageToggleButton = ({ initialPath = '' }: Props) => {
+  const [path, setPath] = useState(initialPath);
 
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path.includes('/en/')) {
-      setLanguage('en');
-    } else if (path.includes('/es/')) {
-      setLanguage('es');
-    } else {
-      const stored = localStorage.getItem('lang');
-      if (stored === 'en' || stored === 'es') {
-        setLanguage(stored);
-      }
+    if (typeof window !== 'undefined') {
+      setPath(window.location.pathname);
     }
   }, []);
 
-  const handleClick = () => {
-    const newLang = language === 'en' ? 'es' : 'en';
-    setLanguage(newLang);
-    localStorage.setItem('lang', newLang);
+  const isEnglish = path.startsWith('/en/');
+  const isSpanish = path.startsWith('/es/');
 
-    const currentPath = window.location.pathname;
-    let newPath;
+  let currentLang: 'en' | 'es' = 'es';
+  if (isEnglish) currentLang = 'en';
+  else if (isSpanish) currentLang = 'es';
 
-    if (currentPath.includes('/en/')) {
-      newPath = currentPath.replace('/en/', '/es/');
-    } else if (currentPath.includes('/es/')) {
-      newPath = currentPath.replace('/es/', '/en/');
-    } else {
-      newPath = `/${newLang}/`;
-    }
+  let targetPath = path;
+  if (isEnglish) {
+    targetPath = path.replace('/en/', '/es/');
+  } else if (isSpanish) {
+    targetPath = path.replace('/es/', '/en/');
+  } else {
+    targetPath = currentLang === 'en' ? '/es/' : '/en/';
+  }
 
-    window.location.href = newPath;
-  };
-
-  return <Button onClick={handleClick}>{language.toUpperCase()}</Button>;
+  return (
+    <Button href={targetPath} data-astro-prefetch="hover">
+      {currentLang.toUpperCase()}
+    </Button>
+  );
 };
 
 export default LanguageToggleButton;

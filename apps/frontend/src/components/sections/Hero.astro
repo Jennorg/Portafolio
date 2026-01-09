@@ -1,12 +1,35 @@
-<section class="flex flex-col gap-4 py-8 items-center h-screen justify-center">
-  <img src="https://placehold.co/400x400" alt="Hero Image" class="w-60" />
-  <div class="flex flex-col items-center text-center">
-    <h2 class="font-semibold text-2xl">Jenfer Martínez</h2>
-    <p class="text-lg">Frontend Developer</p>
-    <p class="mt-3">
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis in ipsum
-      placeat facere! Nesciunt, culpa. Cum quia nam et? Omnis dolore blanditiis
-      ipsum aliquid velit? Reprehenderit velit aliquid consectetur minus?
+---
+import { useTranslations, Languages } from '../../../i18n/ui';
+import Image from 'astro/components/Image.astro';
+import heroImage from '../../assets/me.png';
+
+const urlLang = Astro.url.pathname.split('/')[1];
+const lang = (urlLang in Languages ? urlLang : 'es') as keyof typeof Languages;
+const translations = useTranslations(lang);
+---
+
+<section id="hero" class="flex flex-col-reverse md:flex-row gap-12 py-20 items-center min-h-screen justify-center">
+  <div class="flex flex-col items-center md:items-start text-center md:text-left flex-1">
+    <span class="text-primary font-medium tracking-wider mb-2 uppercase text-sm">{translations('hero_role')}</span>
+    <h1 class="font-bold text-5xl md:text-7xl tracking-tight mb-4 text-transparent bg-clip-text bg-linear-to-r from-primary via-secondary to-accent">
+      Jenfer Martínez
+    </h1>
+    <p class="text-lg md:text-xl text-[--color-text-muted] max-w-lg leading-relaxed mb-8">
+      {translations('hero_description')}
     </p>
+    
+    <div class="flex gap-4">
+      <a href="#projects" class="px-6 py-3 rounded-full bg-primary/90 hover:bg-primary text-white font-medium transition-all shadow-lg hover:shadow-primary/50 hover:-translate-y-1">
+        {translations('hero_cta_projects')}
+      </a>
+      <a href="mailto:jenfer.dev@gmail.com" class="px-6 py-3 rounded-full glass-panel hover:bg-white/10 transition-all">
+        {translations('hero_cta_contact')}
+      </a>
+    </div>
+  </div>
+
+  <div class="relative flex-1 flex justify-center">
+     <div class="absolute inset-0 bg-linear-to-tr from-primary to-accent opacity-20 blur-3xl rounded-full"></div>
+     <Image src={heroImage} alt="Jenfer Martínez" class="relative w-64 md:w-80 h-64 md:h-80 object-cover rounded-2xl shadow-2xl rotate-3 hover:rotate-0 transition-all duration-500 ring-1 ring-white/10" />
   </div>
 </section>
