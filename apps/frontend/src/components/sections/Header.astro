@@ -41,6 +41,6 @@ const translations = useTranslations(lang);
   </nav>
   <div class="flex gap-4">
     <ThemeToggleButton client:load />
-    <LanguageToggleButton />
+    <LanguageToggleButton initialPath={Astro.url.pathname} client:load />
   </div>
 </header>
