@@ -21,6 +21,14 @@ export const ui = {
     stack_title: 'Tech Stack',
     stack_error: 'There was a problem loading the data.',
     stack_empty: 'No technologies to show.',
+    cat_language: 'Languages',
+    cat_frontend: 'Frontend',
+    cat_backend: 'Backend',
+    cat_mobile: 'Mobile',
+    cat_database: 'Databases',
+    cat_devops: 'DevOps',
+    cat_testing: 'Testing',
+    cat_tools: 'Tools',
 
     // Projects
     projects_title: 'Featured Projects',
@@ -48,6 +56,14 @@ export const ui = {
     stack_title: 'Stack Tecnológico',
     stack_error: 'Hubo un problema cargando los datos.',
     stack_empty: 'No hay tecnologías para mostrar.',
+    cat_language: 'Lenguajes',
+    cat_frontend: 'Frontend',
+    cat_backend: 'Backend',
+    cat_mobile: 'Móvil',
+    cat_database: 'Bases de Datos',
+    cat_devops: 'DevOps',
+    cat_testing: 'Testing',
+    cat_tools: 'Herramientas',
 
     // Projects
     projects_title: 'Proyectos Destacados',

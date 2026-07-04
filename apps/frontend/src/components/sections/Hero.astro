@@ -1,29 +1,31 @@
 ---
-import { useTranslations, Languages } from '../../../i18n/ui';
 import Image from 'astro/components/Image.astro';
 import heroImage from '../../assets/me.png';
-
-const urlLang = Astro.url.pathname.split('/')[1];
-const lang = (urlLang in Languages ? urlLang : 'es') as keyof typeof Languages;
-const translations = useTranslations(lang);
+import { ui } from '../../../i18n/ui';
 ---
 
 <section id="hero" class="flex flex-col-reverse md:flex-row gap-12 py-20 items-center min-h-screen justify-center">
   <div class="flex flex-col items-center md:items-start text-center md:text-left flex-1">
-    <span class="text-primary font-medium tracking-wider mb-2 uppercase text-sm">{translations('hero_role')}</span>
+    <span class="text-primary font-medium tracking-wider mb-2 uppercase text-sm">
+      <span class="lang-es">{ui.es.hero_role}</span>
+      <span class="lang-en">{ui.en.hero_role}</span>
+    </span>
     <h1 class="font-bold text-5xl md:text-7xl tracking-tight mb-4 text-transparent bg-clip-text bg-linear-to-r from-primary via-secondary to-accent">
       Jenfer Martínez
     </h1>
     <p class="text-lg md:text-xl text-[--color-text-muted] max-w-lg leading-relaxed mb-8">
-      {translations('hero_description')}
+      <span class="lang-es">{ui.es.hero_description}</span>
+      <span class="lang-en">{ui.en.hero_description}</span>
     </p>
     
     <div class="flex gap-4">
       <a href="#projects" class="px-6 py-3 rounded-full bg-primary/90 hover:bg-primary text-white font-medium transition-all shadow-lg hover:shadow-primary/50 hover:-translate-y-1">
-        {translations('hero_cta_projects')}
+        <span class="lang-es">{ui.es.hero_cta_projects}</span>
+        <span class="lang-en">{ui.en.hero_cta_projects}</span>
       </a>
       <a href="mailto:jenfer.dev@gmail.com" class="px-6 py-3 rounded-full glass-panel hover:bg-white/10 transition-all">
-        {translations('hero_cta_contact')}
+        <span class="lang-es">{ui.es.hero_cta_contact}</span>
+        <span class="lang-en">{ui.en.hero_cta_contact}</span>
       </a>
     </div>
   </div>

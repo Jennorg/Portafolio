@@ -103,3 +103,11 @@ body {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ponytail: Instant client-side translation visibility classes */
+html[data-lang="es"] .lang-en {
+  display: none !important;
+}
+html[data-lang="en"] .lang-es {
+  display: none !important;
+}

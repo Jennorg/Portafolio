@@ -26,3 +26,8 @@ out
 .env.*.local
 .vercel
 .env*.local
+
+# SQLite database files
+*.db
+*.db-*
+

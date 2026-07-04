@@ -2,8 +2,23 @@ import { Request, Response } from "express";
 import { turso } from "../db/client";
 import crypto from "crypto";
 
+let projectsCache: Record<string, any> = {};
+
+export const clearProjectsCache = () => {
+  console.log("[projectsCache] Clearing projects cache...");
+  projectsCache = {};
+};
+
 export const getProjects = async (req: Request, res: Response) => {
   const lang = (req.query.lang as string) || "es";
+
+  if (projectsCache[lang]) {
+    console.log(`[getProjects] Serving lang: ${lang} from backend memory cache`);
+    return res.json(projectsCache[lang]);
+  }
+
+  const start = Date.now();
+  console.log(`[getProjects] Start fetching projects for lang: ${lang} (Cache Miss)`);
 
   try {
     const result = await turso.execute({
@@ -19,6 +34,7 @@ export const getProjects = async (req: Request, res: Response) => {
       `,
       args: [lang],
     });
+    console.log(`[getProjects] Query completed in ${Date.now() - start} ms`);
 
     const projectsMap = new Map();
 
@@ -47,7 +63,9 @@ export const getProjects = async (req: Request, res: Response) => {
       }
     });
 
-    return res.json(Array.from(projectsMap.values()));
+    const projects = Array.from(projectsMap.values());
+    projectsCache[lang] = projects;
+    return res.json(projects);
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ error: "Error al obtener los proyectos" });
@@ -105,6 +123,7 @@ export const createProject = async (req: Request, res: Response) => {
       "write"
     );
 
+    clearProjectsCache();
     return res.status(201).json({
       id: projectId,
       message:
@@ -117,3 +136,25 @@ export const createProject = async (req: Request, res: Response) => {
       .json({ error: "Error al crear el proyecto en la base de datos" });
   }
 };
+
+export const deleteProject = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    await turso.execute({
+      sql: "DELETE FROM projects WHERE id = ?",
+      args: [id],
+    });
+
+    clearProjectsCache();
+    return res.json({
+      message: "Proyecto eliminado exitosamente",
+    });
+  } catch (error) {
+    console.error("Error al eliminar proyecto:", error);
+    return res
+      .status(500)
+      .json({ error: "Error al eliminar el proyecto de la base de datos" });
+  }
+};
+

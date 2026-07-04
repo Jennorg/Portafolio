@@ -1,50 +1,91 @@
 ---
-import { useTranslations, Languages } from '../../../i18n/ui';
-
+import { ui } from '../../../i18n/ui';
 import type { ProjectWithTechnologies } from "@portafolio/shared-types";
 import Card from "../ui/card.astro";
 
-const urlLang = Astro.url.pathname.split('/')[1];
-const lang = (urlLang in Languages ? urlLang : 'es') as keyof typeof Languages;
-const translations = useTranslations(lang);
+interface Props {
+  lang: 'es' | 'en';
+}
 
+const { lang } = Astro.props;
 const backendUrl = import.meta.env.BACKEND_URL;
 
-let projects: ProjectWithTechnologies[] = [];
+let projects: any[] = [];
 let error: string | null = null;
 
+const cache = (globalThis as any)._astroCache = (globalThis as any)._astroCache || {};
+
 try {
-  if (!backendUrl) {
-    throw new Error("BACKEND_URL no está definida en las variables de entorno");
-  }
+  if (cache.bilingualProjects) {
+    projects = cache.bilingualProjects;
+  } else {
+    let projectsEs: ProjectWithTechnologies[] = [];
+    let projectsEn: ProjectWithTechnologies[] = [];
 
-  const response = await fetch(`${backendUrl}/api/projects?lang=${lang}`);
-  
-  if (!response.ok) {
-    throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-  }
-  
-  projects = (await response.json()) as ProjectWithTechnologies[];
+    const pEs = cache.projects_es_promise;
+    const pEn = cache.projects_en_promise;
 
+    if (pEs && pEn) {
+      [projectsEs, projectsEn] = await Promise.all([pEs, pEn]);
+    } else {
+      if (!backendUrl) {
+        throw new Error("BACKEND_URL no está definida");
+      }
+      const [resEs, resEn] = await Promise.all([
+        fetch(`${backendUrl}/api/projects?lang=es`),
+        fetch(`${backendUrl}/api/projects?lang=en`)
+      ]);
+      projectsEs = await resEs.json();
+      projectsEn = await resEn.json();
+    }
+
+    // Zip ES and EN translations into single combined object
+    projects = projectsEs.map(projEs => {
+      const projEn = projectsEn.find(p => p.id === projEs.id) || projEs;
+      return {
+        id: projEs.id,
+        main_image_url: projEs.main_image_url,
+        repository_url: projEs.repository_url,
+        live_demo_url: projEs.live_demo_url,
+        status: projEs.status,
+        technologies: projEs.technologies,
+        titleEs: projEs.title,
+        titleEn: projEn.title,
+        descriptionEs: projEs.summary || projEs.description || "",
+        descriptionEn: projEn.summary || projEn.description || "",
+      };
+    });
+
+    cache.bilingualProjects = projects;
+  }
 } catch (e) {
   error = e instanceof Error ? e.message : "Error desconocido";
-  console.error("Error fetching projects from", backendUrl, ":", e);
+  console.error("Error fetching projects:", e);
 }
 ---
 
 <section id="projects" class="py-20 px-6 max-w-7xl mx-auto min-h-screen flex flex-col justify-center overflow-hidden">
   <h2 class="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-linear-to-r from-primary to-accent">
-    {translations('projects_title')}
+    <span class="lang-es">{ui.es.projects_title}</span>
+    <span class="lang-en">{ui.en.projects_title}</span>
   </h2>
 
   {error && (
     <div class="test-error text-red-500 p-4 border border-red-500 rounded my-4">
-      <p>{translations('projects_error')}</p>
+      <p>
+        <span class="lang-es">{ui.es.projects_error}</span>
+        <span class="lang-en">{ui.en.projects_error}</span>
+      </p>
       <span>{error}</span>
     </div>
   )}
 
-  {projects.length === 0 && !error && <p class="text-center text-(--color-text-muted)">{translations('projects_empty')}</p>}
+  {projects.length === 0 && !error && (
+    <p class="text-center text-(--color-text-muted)">
+      <span class="lang-es">{ui.es.projects_empty}</span>
+      <span class="lang-en">{ui.en.projects_empty}</span>
+    </p>
+  )}
 
   <div class="embla relative" id="projects-carousel">
     <div class="embla__viewport overflow-hidden cursor-grab active:cursor-grabbing">
@@ -52,21 +93,28 @@ try {
         {projects.map((project) => (
           <div class="embla__slide flex-[0_0_85%] md:flex-[0_0_45%] lg:flex-[0_0_30%] min-w-0 pl-6">
             <Card 
-              title={project.title}
-              description={project.summary || project.description || ""}
+              titleEs={project.titleEs}
+              titleEn={project.titleEn}
+              descriptionEs={project.descriptionEs}
+              descriptionEn={project.descriptionEn}
               image={project.main_image_url || undefined}
               url={project.live_demo_url || undefined}
               repo={project.repository_url || undefined}
               technologies={project.technologies.map(t => ({ name: t.name, icon: t.icon || '' }))}
-              liveText={translations('projects_live')}
-              repoText={translations('projects_repo')}
-              readMoreText={translations('projects_read_more')}
-              showLessText={translations('projects_show_less')}
+              liveTextEs={ui.es.projects_live}
+              liveTextEn={ui.en.projects_live}
+              repoTextEs={ui.es.projects_repo}
+              repoTextEn={ui.en.projects_repo}
+              readMoreTextEs={ui.es.projects_read_more}
+              readMoreTextEn={ui.en.projects_read_more}
+              showLessTextEs={ui.es.projects_show_less}
+              showLessTextEn={ui.en.projects_show_less}
             />
           </div>
         ))}
       </div>
     </div>
+  </div>
 </section>
 
 <style>

@@ -5,17 +5,20 @@
     <title>Redirigiendo...</title>
     
     <script is:inline>
+        // ponytail: optimize redirect speed and prevent back-button trap via location.replace
         const getLang = () => {
             if (typeof localStorage !== 'undefined' && localStorage.getItem('lang')) {
                 return localStorage.getItem('lang');
             }
             const browserLang = navigator.language.startsWith('en') ? 'en' : 'es';
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('lang', browserLang);
+            }
             return browserLang;
         };
 
         const lang = getLang();
-        
-        window.location.href = `/${lang}/`;
+        window.location.replace(`/${lang}/`);
     </script>
 </head>
 <body>

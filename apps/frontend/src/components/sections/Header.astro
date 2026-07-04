@@ -1,11 +1,7 @@
 ---
 import ThemeToggleButton from '../common/ThemeToggleButton';
 import LanguageToggleButton from '../common/LanguageToggleButton';
-import { useTranslations, Languages } from '../../../i18n/ui';
-
-const urlLang = Astro.url.pathname.split('/')[1];
-const lang = (urlLang in Languages ? urlLang : 'es') as keyof typeof Languages;
-const translations = useTranslations(lang);
+import { ui } from '../../../i18n/ui';
 ---
 
 <header
@@ -18,7 +14,8 @@ const translations = useTranslations(lang);
           href="#hero"
           class="text-muted hover:text-brand transition-colors"
         >
-          {translations('home')}
+          <span class="lang-es">{ui.es.home}</span>
+          <span class="lang-en">{ui.en.home}</span>
         </a>
       </li>
       <li>
@@ -26,7 +23,8 @@ const translations = useTranslations(lang);
           href="#projects"
           class="text-muted hover:text-brand transition-colors"
         >
-          {translations('projects')}
+          <span class="lang-es">{ui.es.projects}</span>
+          <span class="lang-en">{ui.en.projects}</span>
         </a>
       </li>
       <li>
@@ -34,13 +32,14 @@ const translations = useTranslations(lang);
           href="#stack"
           class="text-muted hover:text-brand transition-colors"
         >
-          {translations('stack')}
+          <span class="lang-es">{ui.es.stack}</span>
+          <span class="lang-en">{ui.en.stack}</span>
         </a>
       </li>
     </ul>
   </nav>
   <div class="flex gap-4">
     <ThemeToggleButton client:load />
-    <LanguageToggleButton initialPath={Astro.url.pathname} client:load />
+    <LanguageToggleButton client:load />
   </div>
 </header>

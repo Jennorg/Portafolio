@@ -1,46 +1,54 @@
 ---
-import { useTranslations, Languages } from '../../../i18n/ui';
-
 import type { Technology } from '@portafolio/shared-types';
-import Container from '../ui/container.astro';
+import { ui } from '../../../i18n/ui';
 
-const urlLang = Astro.url.pathname.split('/')[1];
-const lang = (urlLang in Languages ? urlLang : 'es') as keyof typeof Languages;
-const translations = useTranslations(lang);
+interface Props {
+  lang: 'es' | 'en';
+}
 
+const { lang } = Astro.props;
 const backendUrl = import.meta.env.BACKEND_URL;
 
 let technologies: Technology[] = [];
 let groupedTechnologies: Record<string, Technology[]> = {};
 let error: string | null = null;
 
+const cache = (globalThis as any)._astroCache = (globalThis as any)._astroCache || {};
+const tKey = 'technologies_promise';
+const cacheKey = 'technologies';
+
 try {
-  if (!backendUrl) {
-    throw new Error("BACKEND_URL no está definida");
-  }
-
-  const response = await fetch(`${backendUrl}/api/technologies`);
-  
-  if (!response.ok) {
-    throw new Error(`Error: ${response.status} ${response.statusText}`);
-  }
-  
-  technologies = (await response.json()) as Technology[];
-
-  groupedTechnologies = technologies.reduce((acc, tech) => {
-    const categoryName = tech.category || 'Otras'; 
-    
-    if (!acc[categoryName]) {
-      acc[categoryName] = [];
+  if (cache[cacheKey]) {
+    technologies = cache[cacheKey];
+  } else if (cache[tKey]) {
+    technologies = await cache[tKey];
+    cache[cacheKey] = technologies;
+  } else {
+    if (!backendUrl) {
+      throw new Error("BACKEND_URL no está definida");
     }
-    acc[categoryName].push(tech);
-    return acc;
-  }, {} as Record<string, Technology[]>);
-
+    const response = await fetch(`${backendUrl}/api/technologies`);
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`);
+    }
+    technologies = (await response.json()) as Technology[];
+    cache[cacheKey] = technologies;
+  }
 } catch (e) {
   error = e instanceof Error ? e.message : "Error desconocido";
   console.error("Error fetching technologies:", e);
 }
+
+// Group technologies after fetching or retrieving from cache
+groupedTechnologies = technologies.reduce((acc, tech) => {
+  const categoryName = tech.category || 'Otras'; 
+  
+  if (!acc[categoryName]) {
+    acc[categoryName] = [];
+  }
+  acc[categoryName].push(tech);
+  return acc;
+}, {} as Record<string, Technology[]>);
 
 const priorityOrder = ['language', 'frontend', 'backend', 'mobile', 'database', 'devops', 'testing', 'tools'];
 
@@ -54,22 +62,38 @@ const sortedCategories = Object.keys(groupedTechnologies).sort((a, b) => {
   
   return a.localeCompare(b);
 });
+
+const getCategoryTranslation = (cat: string, targetLang: 'es' | 'en') => {
+  const key = `cat_${cat.toLowerCase()}`;
+  try {
+    return ui[targetLang][key as any] || cat;
+  } catch {
+    return cat;
+  }
+};
 ---
 
 <section id="stack" class="max-w-6xl mx-auto min-h-screen flex flex-col justify-center py-20 px-6">
   <h2 class="text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-    {translations('stack_title')}
+    <span class="lang-es">{ui.es.stack_title}</span>
+    <span class="lang-en">{ui.en.stack_title}</span>
   </h2>
   
   {error && (
     <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl my-4 text-center">
-      <p>{translations('stack_error')}</p>
+      <p>
+        <span class="lang-es">{ui.es.stack_error}</span>
+        <span class="lang-en">{ui.en.stack_error}</span>
+      </p>
       <span class="text-xs opacity-75">{error}</span>
     </div>
   )}
 
   {technologies.length === 0 && !error && (
-    <p class="text-center text-[var(--color-text-muted)]">{translations('stack_empty')}</p>
+    <p class="text-center text-[var(--color-text-muted)]">
+      <span class="lang-es">{ui.es.stack_empty}</span>
+      <span class="lang-en">{ui.en.stack_empty}</span>
+    </p>
   )}
 
   <div class="space-y-12">
@@ -77,7 +101,8 @@ const sortedCategories = Object.keys(groupedTechnologies).sort((a, b) => {
       <div class="animate-fade-in-up">
         {/* Título de la Categoría */}
         <h3 class="text-xl font-semibold mb-6 px-4 border-l-4 border-primary/50 text-[var(--color-text-body)] capitalize">
-          {category}
+          <span class="lang-es">{getCategoryTranslation(category, 'es')}</span>
+          <span class="lang-en">{getCategoryTranslation(category, 'en')}</span>
         </h3>
 
         {/* Grid de tecnologías para esta categoría */}
